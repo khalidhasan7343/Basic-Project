@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Number Guessing Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      /* Simple shake animation for wrong guesses */
+      .shake {
+        animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translate3d(-1px, 0, 0);
+        }
+        20%,
+        80% {
+          transform: translate3d(2px, 0, 0);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translate3d(-3px, 0, 0);
+        }
+        40%,
+        60% {
+          transform: translate3d(3px, 0, 0);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-900 flex min-h-screen items-center justify-center p-4">
+    <div
+      class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 text-center transition-all"
+    >
+      <h1 class="text-3xl font-extrabold text-slate-800 mb-2">
+        Guess the Number
+      </h1>
+      <p class="text-slate-500 mb-8">
+        Thinking of a number between
+        <span id="minRange" class="font-bold">1</span> and
+        <span id="maxRange" class="font-bold">100</span>.
+      </p>
+
+      <div id="gameControls" class="space-y-4">
+        <input
+          type="number"
+          id="guessInput"
+          placeholder="Enter guess..."
+          class="w-full text-center text-3xl font-bold py-4 px-4 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all text-slate-700 tabular-nums"
+        />
+
+        <button
+          id="submitBtn"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xl py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]"
+        >
+          Make a Guess
+        </button>
+      </div>
+
+      <div
+        id="feedbackArea"
+        class="hidden mt-6 p-4 rounded-xl text-lg font-bold animate-pulse"
+      ></div>
+
+      <button
+        id="resetBtn"
+        class="hidden w-full mt-6 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]"
+      >
+        Play Again
+      </button>
+
+      <div
+        class="mt-8 text-sm font-semibold text-slate-400 uppercase tracking-wider flex justify-between px-4"
+      >
+        <span
+          >Attempts:
+          <span id="attemptsCount" class="text-slate-800 text-base"
+            >0</span
+          ></span
+        >
+      </div>
+    </div>
+
+    <script>
+      // ===========================
+      // GAME LOGIC & STATE
+      // ===========================
+      const minimum = 1;
+      const maximum = 100;
+      let answer;
+      let attempts = 0;
+      let isRunning = true;
+
+      // DOM Elements
+      const guessInput = document.getElementById("guessInput");
+      const submitBtn = document.getElementById("submitBtn");
+      const feedbackArea = document.getElementById("feedbackArea");
+      const attemptsDisplay = document.getElementById("attemptsCount");
+      const resetBtn = document.getElementById("resetBtn");
+      const gameControls = document.getElementById("gameControls");
+
+      // Initialize Ranges in UI
+      document.getElementById("minRange").textContent = minimum;
+      document.getElementById("maxRange").textContent = maximum;
+
+      // Start/Reset function
+      function initGame() {
+        answer = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+        attempts = 0;
+        isRunning = true;
+        attemptsDisplay.textContent = attempts;
+        guessInput.value = "";
+        feedbackArea.classList.add("hidden");
+        feedbackArea.className = "hidden mt-6 p-4 rounded-xl text-lg font-bold"; // Reset classes
+        resetBtn.classList.add("hidden");
+        gameControls.classList.remove("hidden");
+        guessInput.focus();
+        console.log(`Psst. The answer is ${answer}`); // For debugging
+      }
+
+      // Helper to show feedback messages with colors
+      function showFeedback(message, type) {
+        feedbackArea.textContent = message;
+        feedbackArea.classList.remove("hidden");
+
+        // Remove old color classes
+        feedbackArea.classList.remove(
+          "bg-red-100",
+          "text-red-600",
+          "bg-amber-100",
+          "text-amber-600",
+          "bg-emerald-100",
+          "text-emerald-700"
+        );
+
+        // Add new colors based on type
+        if (type === "error") {
+          feedbackArea.classList.add("bg-red-100", "text-red-600");
+          triggerShake();
+        } else if (type === "hint") {
+          feedbackArea.classList.add("bg-amber-100", "text-amber-800");
+          triggerShake();
+        } else if (type === "success") {
+          feedbackArea.classList.add("bg-emerald-100", "text-emerald-700");
+        }
+      }
+
+      // Helper to trigger shake animation on input field
+      function triggerShake() {
+        guessInput.classList.add("shake");
+        setTimeout(() => guessInput.classList.remove("shake"), 500);
+      }
+
+      // The Core Logic (Replacing your while loop)
+      function processGuess() {
+        if (!isRunning) return;
+
+        let guess = Number(guessInput.value);
+        guessInput.focus(); // Keep focus for next typing
+
+        // Validation Logic (kept from your original code)
+        if (isNaN(guess) || guessInput.value === "") {
+          showFeedback("Please enter a valid number", "error");
+          return;
+        }
+
+        if (guess < minimum || guess > maximum) {
+          showFeedback(
+            `Please enter a number between ${minimum} - ${maximum}`,
+            "error"
+          );
+          return;
+        }
+
+        // Game Logic
+        attempts++;
+        attemptsDisplay.textContent = attempts;
+
+        if (guess < answer) {
+          showFeedback("Too LOW! Try Again!", "hint");
+          guessInput.value = ""; // Clear input for next guess
+        } else if (guess > answer) {
+          showFeedback("Too HIGH! Try Again!", "hint");
+          guessInput.value = "";
+        } else {
+          // WIN CONDITION
+          showFeedback(`CORRECT! The answer was ${answer}.`, "success");
+          isRunning = false;
+          endGameState();
+        }
+      }
+
+      // Switch UI to "Game Over" state
+      function endGameState() {
+        gameControls.classList.add("hidden");
+        resetBtn.classList.remove("hidden");
+        resetBtn.focus();
+      }
+
+      // ===========================
+      // EVENT LISTENERS
+      // ===========================
+
+      // Listen for the "Click"
+      submitBtn.addEventListener("click", processGuess);
+
+      // Listen for "Enter" key inside the input box
+      guessInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          processGuess();
+        }
+      });
+
+      // Listen for Reset click
+      resetBtn.addEventListener("click", initGame);
+
+      // Start the game on load
+      initGame();
+    </script>
+  </body>
+</html>
