@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Slider</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Manrope", sans-serif;
+      }
+
+      /* === ANIMATIONS === */
+
+      /* The "Apple-style" smooth slide */
+      .slider-track {
+        transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+      }
+
+      /* Text Reveal Animation */
+      .slide-content h2,
+      .slide-content p,
+      .slide-content button {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s ease-out;
+      }
+
+      /* Active Slide: Text floats up */
+      .slide.active .slide-content h2 {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.3s;
+      }
+      .slide.active .slide-content p {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.4s;
+      }
+      .slide.active .slide-content button {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.5s;
+      }
+
+      /* Progress Bar Animation */
+      .progress-bar {
+        width: 0%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.8);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 20;
+      }
+      .progress-bar.running {
+        animation: progress 5s linear forwards; /* 5s matches auto-play time */
+      }
+      @keyframes progress {
+        to {
+          width: 100%;
+        }
+      }
+
+      /* Image Zoom Effect on Active */
+      .slide img {
+        transition: transform 6s ease;
+        transform: scale(1);
+      }
+      .slide.active img {
+        transform: scale(1.1); /* Slow zoom in when active */
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-950 flex items-center justify-center min-h-screen p-0 sm:p-6 overflow-hidden"
+  >
+    <div
+      class="relative w-full max-w-5xl aspect-[16/9] sm:rounded-3xl overflow-hidden shadow-2xl group border border-gray-800"
+    >
+      <div id="progressBar" class="progress-bar running"></div>
+
+      <div id="sliderTrack" class="slider-track flex w-full h-full">
+        <div class="slide active min-w-full h-full relative">
+          <img
+            src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop"
+            class="w-full h-full object-cover brightness-50"
+            alt="Nature"
+          />
+          <div
+            class="absolute inset-0 flex flex-col justify-center items-start p-10 sm:p-20 text-white slide-content"
+          >
+            <h2 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight">
+              Explore the <br />Wilderness
+            </h2>
+            <p class="text-gray-300 text-lg sm:text-xl max-w-lg mb-8">
+              Journey through the untouched forests and foggy mountains of the
+              great north.
+            </p>
+            <button
+              class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+            >
+              Start Journey
+            </button>
+          </div>
+        </div>
+
+        <div class="slide min-w-full h-full relative">
+          <img
+            src="https://images.unsplash.com/photo-1518098268026-4e186f84bf28?q=80&w=1920&auto=format&fit=crop"
+            class="w-full h-full object-cover brightness-50"
+            alt="City"
+          />
+          <div
+            class="absolute inset-0 flex flex-col justify-center items-start p-10 sm:p-20 text-white slide-content"
+          >
+            <h2 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight">
+              Urban <br />Architecture
+            </h2>
+            <p class="text-gray-300 text-lg sm:text-xl max-w-lg mb-8">
+              Discover the symmetry and chaos of modern city skylines at night.
+            </p>
+            <button
+              class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+            >
+              View Gallery
+            </button>
+          </div>
+        </div>
+
+        <div class="slide min-w-full h-full relative">
+          <img
+            src="https://images.unsplash.com/photo-1536697246787-1f7ae568d89a?q=80&w=1920&auto=format&fit=crop"
+            class="w-full h-full object-cover brightness-50"
+            alt="Ocean"
+          />
+          <div
+            class="absolute inset-0 flex flex-col justify-center items-start p-10 sm:p-20 text-white slide-content"
+          >
+            <h2 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight">
+              Deep Blue <br />Oceans
+            </h2>
+            <p class="text-gray-300 text-lg sm:text-xl max-w-lg mb-8">
+              Dive into the mystery of the deep sea and colorful coral reefs.
+            </p>
+            <button
+              class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+            >
+              Learn More
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button
+        onclick="prevSlide()"
+        class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5"
+          />
+        </svg>
+      </button>
+
+      <button
+        onclick="nextSlide()"
+        class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+          />
+        </svg>
+      </button>
+
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+        <button
+          onclick="goToSlide(0)"
+          class="dot w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-all active-dot"
+        ></button>
+        <button
+          onclick="goToSlide(1)"
+          class="dot w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-all"
+        ></button>
+        <button
+          onclick="goToSlide(2)"
+          class="dot w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-all"
+        ></button>
+      </div>
+    </div>
+
+    <script>
+      const track = document.getElementById("sliderTrack");
+      const slides = document.querySelectorAll(".slide");
+      const dots = document.querySelectorAll(".dot");
+      const progressBar = document.getElementById("progressBar");
+
+      let currentIndex = 0;
+      const totalSlides = slides.length;
+      let autoPlayTimer;
+
+      // Core Update Function
+      function updateSlider() {
+        // 1. Move Track
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+        // 2. Update Active Classes (for text animations)
+        slides.forEach((slide, index) => {
+          if (index === currentIndex) {
+            slide.classList.add("active");
+          } else {
+            slide.classList.remove("active");
+          }
+        });
+
+        // 3. Update Dots
+        dots.forEach((dot, index) => {
+          if (index === currentIndex) {
+            dot.classList.add("bg-white", "scale-125");
+            dot.classList.remove("bg-white/50");
+          } else {
+            dot.classList.remove("bg-white", "scale-125");
+            dot.classList.add("bg-white/50");
+          }
+        });
+
+        // 4. Reset & Restart Progress Bar
+        resetProgressBar();
+      }
+
+      function nextSlide() {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        updateSlider();
+        resetTimer();
+      }
+
+      function prevSlide() {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        updateSlider();
+        resetTimer();
+      }
+
+      function goToSlide(index) {
+        currentIndex = index;
+        updateSlider();
+        resetTimer();
+      }
+
+      // Auto Play Logic
+      function startAutoPlay() {
+        autoPlayTimer = setInterval(nextSlide, 5000); // 5 Seconds
+      }
+
+      function resetTimer() {
+        clearInterval(autoPlayTimer);
+        startAutoPlay();
+      }
+
+      // CSS Animation Reset Helper
+      function resetProgressBar() {
+        progressBar.classList.remove("running");
+        void progressBar.offsetWidth; // Trigger Reflow
+        progressBar.classList.add("running");
+      }
+
+      // Initialize
+      updateSlider();
+      startAutoPlay();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      /* === BUTTON STYLING === */
+      /* The 3D "Pop" effect */
+      .btn {
+        transition: all 0.1s;
+        box-shadow: 0 4px 0px rgba(0, 0, 0, 0.2); /* The bottom "lip" of the button */
+      }
+      .btn:active,
+      .btn.pressed {
+        transform: translateY(4px); /* Moves down */
+        box-shadow: 0 0px 0px rgba(0, 0, 0, 0.2); /* Shadow disappears */
+      }
+
+      /* Operator specific glow */
+      .op-btn {
+        background: #334155;
+        color: #94a3b8;
+      }
+      .op-btn:hover {
+        background: #475569;
+        color: white;
+      }
+
+      /* Number specific style */
+      .num-btn {
+        background: #1e293b;
+        color: white;
+      }
+      .num-btn:hover {
+        background: #334155;
+      }
+
+      /* Equals Button Glow Animation */
+      .equal-btn {
+        background: linear-gradient(135deg, #4f46e5, #818cf8);
+        box-shadow: 0 4px 0px #3730a3, 0 0 20px rgba(79, 70, 229, 0.4);
+      }
+      .equal-btn:hover {
+        box-shadow: 0 4px 0px #3730a3, 0 0 30px rgba(79, 70, 229, 0.6);
+      }
+      .equal-btn:active,
+      .equal-btn.pressed {
+        box-shadow: 0 0px 0px #3730a3, 0 0 10px rgba(79, 70, 229, 0.3);
+      }
+
+      /* Screen Glitch/Flash on Clear */
+      .screen-flash {
+        animation: flash 0.2s ease-out;
+      }
+      @keyframes flash {
+        0% {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+        100% {
+          background-color: transparent;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-900 flex items-center justify-center min-h-screen p-4 select-none"
+  >
+    <div
+      class="w-full max-w-xs bg-slate-800 rounded-3xl p-6 shadow-2xl border border-slate-700 relative overflow-hidden"
+    >
+      <div
+        class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-500 rounded-full blur-[60px] opacity-20 pointer-events-none"
+      ></div>
+
+      <div class="flex justify-between items-center mb-6 px-1">
+        <span class="text-xs font-bold text-slate-500 tracking-widest uppercase"
+          >Casio-X</span
+        >
+        <div class="flex gap-1">
+          <div class="w-2 h-2 rounded-full bg-red-500"></div>
+          <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+          <div class="w-2 h-2 rounded-full bg-green-500"></div>
+        </div>
+      </div>
+
+      <div
+        id="screen"
+        class="bg-slate-950 rounded-2xl p-4 mb-6 text-right shadow-inner border border-slate-800 h-28 flex flex-col justify-between transition-colors"
+      >
+        <div
+          id="previousOperand"
+          class="text-slate-400 text-sm h-6 font-medium break-all overflow-hidden"
+        ></div>
+        <div
+          id="currentOperand"
+          class="text-white text-4xl font-bold break-all overflow-hidden tracking-wide"
+        >
+          0
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3">
+        <button
+          class="btn p-4 rounded-xl bg-red-500/10 text-red-400 font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition-colors col-span-2"
+          data-action="AC"
+        >
+          AC
+        </button>
+        <button
+          class="btn p-4 rounded-xl bg-slate-700 text-slate-300 font-bold hover:bg-slate-600"
+          data-action="DEL"
+        >
+          DEL
+        </button>
+        <button class="btn op-btn p-4 rounded-xl font-bold" data-action="÷">
+          ÷
+        </button>
+
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="7"
+        >
+          7
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="8"
+        >
+          8
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="9"
+        >
+          9
+        </button>
+        <button class="btn op-btn p-4 rounded-xl font-bold" data-action="*">
+          ×
+        </button>
+
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="4"
+        >
+          4
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="5"
+        >
+          5
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="6"
+        >
+          6
+        </button>
+        <button class="btn op-btn p-4 rounded-xl font-bold" data-action="-">
+          -
+        </button>
+
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="1"
+        >
+          1
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="2"
+        >
+          2
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="3"
+        >
+          3
+        </button>
+        <button class="btn op-btn p-4 rounded-xl font-bold" data-action="+">
+          +
+        </button>
+
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium rounded-bl-xl"
+          data-number="."
+        >
+          .
+        </button>
+        <button
+          class="btn num-btn p-4 rounded-xl text-xl font-medium"
+          data-number="0"
+        >
+          0
+        </button>
+        <button
+          class="btn equal-btn col-span-2 p-4 rounded-xl text-white font-bold text-xl rounded-br-xl"
+          data-action="="
+        >
+          =
+        </button>
+      </div>
+    </div>
+
+    <script>
+      class Calculator {
+        constructor(previousOperandTextElement, currentOperandTextElement) {
+          this.previousOperandTextElement = previousOperandTextElement;
+          this.currentOperandTextElement = currentOperandTextElement;
+          this.clear();
+        }
+
+        clear() {
+          this.currentOperand = "";
+          this.previousOperand = "";
+          this.operation = undefined;
+          this.triggerScreenFlash();
+        }
+
+        delete() {
+          this.currentOperand = this.currentOperand.toString().slice(0, -1);
+        }
+
+        appendNumber(number) {
+          if (number === "." && this.currentOperand.includes(".")) return;
+          // Limit length to prevent overflow
+          if (this.currentOperand.length > 10) return;
+          this.currentOperand =
+            this.currentOperand.toString() + number.toString();
+        }
+
+        chooseOperation(operation) {
+          if (this.currentOperand === "") return;
+          if (this.previousOperand !== "") {
+            this.compute();
+          }
+          this.operation = operation;
+          this.previousOperand = this.currentOperand;
+          this.currentOperand = "";
+        }
+
+        compute() {
+          let computation;
+          const prev = parseFloat(this.previousOperand);
+          const current = parseFloat(this.currentOperand);
+          if (isNaN(prev) || isNaN(current)) return;
+          switch (this.operation) {
+            case "+":
+              computation = prev + current;
+              break;
+            case "-":
+              computation = prev - current;
+              break;
+            case "*":
+              computation = prev * current;
+              break;
+            case "÷":
+              computation = prev / current;
+              break;
+            default:
+              return;
+          }
+          this.currentOperand = computation;
+          this.operation = undefined;
+          this.previousOperand = "";
+        }
+
+        getDisplayNumber(number) {
+          const stringNumber = number.toString();
+          const integerDigits = parseFloat(stringNumber.split(".")[0]);
+          const decimalDigits = stringNumber.split(".")[1];
+          let integerDisplay;
+          if (isNaN(integerDigits)) {
+            integerDisplay = "";
+          } else {
+            integerDisplay = integerDigits.toLocaleString("en", {
+              maximumFractionDigits: 0,
+            });
+          }
+          if (decimalDigits != null) {
+            return `${integerDisplay}.${decimalDigits}`;
+          } else {
+            return integerDisplay;
+          }
+        }
+
+        updateDisplay() {
+          this.currentOperandTextElement.innerText =
+            this.getDisplayNumber(this.currentOperand) || "0";
+          if (this.operation != null) {
+            this.previousOperandTextElement.innerText = `${this.getDisplayNumber(
+              this.previousOperand
+            )} ${this.operation}`;
+          } else {
+            this.previousOperandTextElement.innerText = "";
+          }
+        }
+
+        triggerScreenFlash() {
+          const screen = document.getElementById("screen");
+          screen.classList.remove("screen-flash");
+          void screen.offsetWidth; // Trigger reflow
+          screen.classList.add("screen-flash");
+        }
+      }
+
+      /* === SETUP === */
+      const numberButtons = document.querySelectorAll("[data-number]");
+      const operationButtons = document.querySelectorAll("[data-action]");
+      const previousOperandTextElement =
+        document.getElementById("previousOperand");
+      const currentOperandTextElement =
+        document.getElementById("currentOperand");
+
+      const calculator = new Calculator(
+        previousOperandTextElement,
+        currentOperandTextElement
+      );
+
+      /* === CLICK HANDLERS === */
+      numberButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          calculator.appendNumber(button.getAttribute("data-number"));
+          calculator.updateDisplay();
+          animatePress(button);
+        });
+      });
+
+      operationButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.getAttribute("data-action");
+          if (action === "AC") {
+            calculator.clear();
+            calculator.updateDisplay();
+          } else if (action === "DEL") {
+            calculator.delete();
+            calculator.updateDisplay();
+          } else if (action === "=") {
+            calculator.compute();
+            calculator.updateDisplay();
+          } else {
+            calculator.chooseOperation(action);
+            calculator.updateDisplay();
+          }
+          animatePress(button);
+        });
+      });
+
+      /* === KEYBOARD SUPPORT === */
+      document.addEventListener("keydown", (e) => {
+        let key = e.key;
+
+        // Map keys
+        if (key === "Enter") key = "=";
+        if (key === "Backspace") key = "DEL";
+        if (key === "Escape") key = "AC";
+        if (key === "/") key = "÷";
+        if (key === "x") key = "*";
+
+        // Find matching button to trigger animation
+        let btn;
+        if (!isNaN(key) || key === ".") {
+          btn = document.querySelector(`[data-number="${key}"]`);
+          if (btn) {
+            calculator.appendNumber(key);
+            calculator.updateDisplay();
+            animatePress(btn);
+          }
+        } else {
+          // Find operator button
+          // This is a bit manual because of the specific data-attributes,
+          // but covers the main operators
+          const ops = document.querySelectorAll("[data-action]");
+          ops.forEach((op) => {
+            if (op.getAttribute("data-action") === key) {
+              btn = op;
+            }
+          });
+
+          if (btn) {
+            if (key === "AC") calculator.clear();
+            else if (key === "DEL") calculator.delete();
+            else if (key === "=") calculator.compute();
+            else calculator.chooseOperation(key);
+
+            calculator.updateDisplay();
+            animatePress(btn);
+          }
+        }
+      });
+
+      // Helper to trigger the CSS active state visually via JS
+      function animatePress(element) {
+        element.classList.add("pressed");
+        setTimeout(() => {
+          element.classList.remove("pressed");
+        }, 100);
+      }
+    </script>
+  </body>
+</html>

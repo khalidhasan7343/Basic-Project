@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Clock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .digital-font {
+        font-family: "Orbitron", sans-serif;
+      }
+
+      /* === NEON GLOW EFFECTS === */
+      .neon-text {
+        text-shadow: 0 0 10px rgba(6, 182, 212, 0.5),
+          0 0 20px rgba(6, 182, 212, 0.3);
+      }
+      .neon-box {
+        box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.05),
+          0 0 15px rgba(6, 182, 212, 0.1);
+      }
+
+      /* === PULSING COLON ANIMATION === */
+      .separator {
+        animation: blink 1s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+          text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+        }
+        50% {
+          opacity: 0.3;
+          text-shadow: none;
+        }
+      }
+
+      /* === NUMBER TRANSITION ANIMATION === */
+      /* We use a specific class to trigger a quick 'pop' when numbers change */
+      .pop-anim {
+        animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(1);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1.15);
+          opacity: 1;
+          text-shadow: 0 0 30px rgba(6, 182, 212, 0.8);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-950 flex items-center justify-center min-h-screen p-4 select-none"
+  >
+    <div class="relative group">
+      <div
+        class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"
+      ></div>
+
+      <div
+        class="relative w-full max-w-3xl bg-gray-900 ring-1 ring-gray-800 rounded-xl p-8 sm:p-12 shadow-2xl flex flex-col items-center neon-box"
+      >
+        <div
+          id="fullDate"
+          class="text-cyan-400/70 font-bold tracking-[0.2em] uppercase text-sm mb-8"
+        >
+          LOADING DATE...
+        </div>
+
+        <div class="flex items-center justify-center gap-2 sm:gap-4 mb-10">
+          <div class="relative">
+            <div
+              class="w-20 h-24 sm:w-32 sm:h-40 bg-gray-800/50 rounded-lg border border-gray-700/50 flex items-center justify-center backdrop-blur-sm"
+            >
+              <span
+                id="hours"
+                class="digital-font text-5xl sm:text-8xl font-black text-white tabular-nums neon-text"
+                >00</span
+              >
+            </div>
+            <span
+              class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 font-bold tracking-widest"
+              >HOURS</span
+            >
+          </div>
+
+          <div
+            class="digital-font text-4xl sm:text-6xl text-cyan-500 pb-6 separator"
+          >
+            :
+          </div>
+
+          <div class="relative">
+            <div
+              class="w-20 h-24 sm:w-32 sm:h-40 bg-gray-800/50 rounded-lg border border-gray-700/50 flex items-center justify-center backdrop-blur-sm"
+            >
+              <span
+                id="minutes"
+                class="digital-font text-5xl sm:text-8xl font-black text-white tabular-nums neon-text"
+                >00</span
+              >
+            </div>
+            <span
+              class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 font-bold tracking-widest"
+              >MINS</span
+            >
+          </div>
+
+          <div
+            class="digital-font text-4xl sm:text-6xl text-cyan-500 pb-6 separator"
+          >
+            :
+          </div>
+
+          <div class="relative">
+            <div
+              class="w-20 h-24 sm:w-32 sm:h-40 bg-gray-800/50 rounded-lg border border-gray-700/50 flex items-center justify-center backdrop-blur-sm"
+            >
+              <span
+                id="seconds"
+                class="digital-font text-5xl sm:text-8xl font-black text-cyan-400 tabular-nums neon-text"
+                >00</span
+              >
+            </div>
+            <span
+              class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 font-bold tracking-widest"
+              >SECS</span
+            >
+          </div>
+
+          <div class="flex flex-col justify-end h-24 sm:h-40 pb-4 ml-2">
+            <span
+              id="ampm"
+              class="digital-font text-xl sm:text-3xl font-bold text-gray-600 transition-colors duration-500"
+              >AM</span
+            >
+          </div>
+        </div>
+
+        <div
+          class="flex gap-2 sm:gap-6 mt-4 border-t border-gray-800 pt-6 w-full justify-center"
+        >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-0"
+            >SUN</span
+          >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-1"
+            >MON</span
+          >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-2"
+            >TUE</span
+          >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-3"
+            >WED</span
+          >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-4"
+            >THU</span
+          >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-5"
+            >FRI</span
+          >
+          <span class="day-label text-xs font-bold text-gray-700" id="day-6"
+            >SAT</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const elHours = document.getElementById("hours");
+      const elMinutes = document.getElementById("minutes");
+      const elSeconds = document.getElementById("seconds");
+      const elAmPm = document.getElementById("ampm");
+      const elDate = document.getElementById("fullDate");
+
+      let oldSeconds = "";
+
+      function updateClock() {
+        const now = new Date();
+
+        // 1. Get Time Components
+        let h = now.getHours();
+        let m = now.getMinutes();
+        let s = now.getSeconds();
+        let ampm = h >= 12 ? "PM" : "AM";
+
+        // 2. Convert to 12-hour format
+        h = h % 12;
+        h = h ? h : 12; // the hour '0' should be '12'
+
+        // 3. Format with leading zeros
+        const hStr = h < 10 ? "0" + h : h;
+        const mStr = m < 10 ? "0" + m : m;
+        const sStr = s < 10 ? "0" + s : s;
+
+        // 4. Update DOM with Animation Check
+        // We only trigger animation if the number actually changes
+        updateWithAnimation(elHours, hStr);
+        updateWithAnimation(elMinutes, mStr);
+
+        // Seconds always change, so we handle them slightly differently for performance
+        elSeconds.textContent = sStr;
+        // Add a subtle pop to seconds every time
+        triggerPop(elSeconds);
+
+        // 5. Update AM/PM color
+        elAmPm.textContent = ampm;
+        if (ampm === "PM") {
+          elAmPm.classList.remove("text-gray-600");
+          elAmPm.classList.add("text-cyan-600");
+        } else {
+          elAmPm.classList.add("text-cyan-600");
+        }
+
+        // 6. Update Date string
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        elDate.textContent = now.toLocaleDateString("en-US", options);
+
+        // 7. Highlight Current Day
+        const dayIndex = now.getDay(); // 0 (Sun) - 6 (Sat)
+        document.querySelectorAll(".day-label").forEach((el, index) => {
+          if (index === dayIndex) {
+            el.className =
+              "day-label text-xs font-bold text-cyan-400 transition-colors duration-300 transform scale-125";
+            el.style.textShadow = "0 0 10px rgba(34, 211, 238, 0.5)";
+          } else {
+            el.className = "day-label text-xs font-bold text-gray-700";
+            el.style.textShadow = "none";
+          }
+        });
+      }
+
+      // Helper: Updates text and triggers animation ONLY if text changed
+      function updateWithAnimation(element, newValue) {
+        if (element.textContent !== String(newValue)) {
+          element.textContent = newValue;
+          triggerPop(element);
+        }
+      }
+
+      // Helper: Adds the CSS animation class, then removes it
+      function triggerPop(element) {
+        element.classList.remove("pop-anim");
+        void element.offsetWidth; // trigger reflow to restart animation
+        element.classList.add("pop-anim");
+      }
+
+      // Start
+      setInterval(updateClock, 1000);
+      updateClock(); // Run immediately on load
+    </script>
+  </body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stopwatch with Recorder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;800&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      /* === ANIMATIONS === */
+      .spin-slow {
+        animation: spin 3s linear infinite;
+      }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* New Record Slide-In Animation */
+      .record-item {
+        animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      @keyframes slideIn {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Button Active Press */
+      .btn-press:active {
+        transform: scale(0.95);
+        filter: brightness(0.9);
+      }
+
+      /* Custom Scrollbar */
+      .custom-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #1f2937;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden text-white"
+  >
+    <div
+      class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none"
+    >
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-900/20 rounded-full blur-[100px]"
+      ></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-sm flex flex-col gap-6">
+      <div
+        class="relative w-full aspect-square max-w-[300px] mx-auto flex items-center justify-center"
+      >
+        <div
+          class="absolute inset-0 rounded-full border border-slate-800"
+        ></div>
+        <div
+          class="absolute inset-4 rounded-full border border-slate-800 border-dashed opacity-50"
+        ></div>
+
+        <div
+          id="spinner"
+          class="absolute inset-0 rounded-full border-t-2 border-blue-500 opacity-0 transition-opacity duration-300"
+        ></div>
+
+        <div class="flex flex-col items-center">
+          <div
+            id="display"
+            class="mono text-6xl font-extrabold tracking-tighter tabular-nums text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+          >
+            00:00<span class="text-3xl text-slate-500">.00</span>
+          </div>
+          <div
+            class="text-blue-500 text-xs font-bold tracking-[0.4em] mt-2 uppercase"
+          >
+            Precision
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 items-center">
+        <button
+          onclick="resetTimer()"
+          id="btnReset"
+          disabled
+          class="h-16 rounded-2xl bg-slate-800 text-slate-400 font-bold text-xs tracking-wider border border-slate-700 btn-press transition-all hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          RESET
+        </button>
+
+        <button
+          onclick="toggleTimer()"
+          id="btnMain"
+          class="h-20 w-20 mx-auto rounded-full bg-blue-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(37,99,235,0.4)] btn-press transition-all hover:bg-blue-500 flex items-center justify-center border-4 border-slate-950"
+        >
+          <svg
+            id="iconPlay"
+            class="w-8 h-8 ml-1"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <svg
+            id="iconPause"
+            class="w-8 h-8 hidden"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        </button>
+
+        <button
+          onclick="recordLap()"
+          id="btnRecord"
+          disabled
+          class="h-16 rounded-2xl bg-slate-800 text-blue-400 font-bold text-xs tracking-wider border border-slate-700 btn-press transition-all hover:bg-slate-700 hover:text-blue-300 hover:border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          RECORD
+        </button>
+      </div>
+
+      <div
+        class="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 h-64 flex flex-col overflow-hidden"
+      >
+        <div
+          class="flex justify-between px-6 py-3 border-b border-slate-800 bg-slate-900/80 text-xs font-bold text-slate-500 uppercase tracking-wider"
+        >
+          <span>Lap No.</span>
+          <span>Time</span>
+        </div>
+
+        <div
+          id="recordsList"
+          class="flex-1 overflow-y-auto p-2 custom-scroll space-y-1"
+        >
+          <div
+            id="emptyMsg"
+            class="h-full flex flex-col items-center justify-center text-slate-600 space-y-2"
+          >
+            <svg
+              class="w-8 h-8 opacity-50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span class="text-xs">No records yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // State
+      let startTime = 0;
+      let elapsedTime = 0;
+      let timerInterval;
+      let isRunning = false;
+      let lapCount = 0;
+
+      // DOM Elements
+      const display = document.getElementById("display");
+      const spinner = document.getElementById("spinner");
+      const btnMain = document.getElementById("btnMain");
+      const btnReset = document.getElementById("btnReset");
+      const btnRecord = document.getElementById("btnRecord");
+      const recordsList = document.getElementById("recordsList");
+      const emptyMsg = document.getElementById("emptyMsg");
+
+      // Icons
+      const iconPlay = document.getElementById("iconPlay");
+      const iconPause = document.getElementById("iconPause");
+
+      // Helper: Format Time
+      function formatTime(ms) {
+        let date = new Date(ms);
+        let m = date.getUTCMinutes().toString().padStart(2, "0");
+        let s = date.getUTCSeconds().toString().padStart(2, "0");
+        let centis = Math.floor(date.getMilliseconds() / 10)
+          .toString()
+          .padStart(2, "0");
+        return {
+          html: `${m}:${s}<span class="text-3xl text-slate-500">.${centis}</span>`,
+          raw: `${m}:${s}.${centis}`,
+        };
+      }
+
+      function updateDisplay() {
+        elapsedTime = Date.now() - startTime;
+        display.innerHTML = formatTime(elapsedTime).html;
+      }
+
+      function toggleTimer() {
+        if (isRunning) {
+          // STOP
+          clearInterval(timerInterval);
+          isRunning = false;
+
+          // UI: Pause State
+          spinner.classList.remove("opacity-100", "spin-slow");
+          spinner.classList.add("opacity-0");
+
+          btnMain.classList.replace("bg-blue-600", "bg-emerald-500"); // Change to green (resume) style
+          btnMain.classList.replace(
+            "shadow-[0_0_20px_rgba(37,99,235,0.4)]",
+            "shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+          );
+
+          iconPlay.classList.remove("hidden");
+          iconPause.classList.add("hidden");
+
+          btnRecord.disabled = true; // Cannot record while paused
+        } else {
+          // START
+          startTime = Date.now() - elapsedTime;
+          timerInterval = setInterval(updateDisplay, 10);
+          isRunning = true;
+
+          // UI: Running State
+          spinner.classList.remove("opacity-0");
+          spinner.classList.add("opacity-100", "spin-slow"); // Start spinner
+
+          btnMain.classList.replace("bg-emerald-500", "bg-blue-600"); // Back to Blue
+          btnMain.classList.replace(
+            "shadow-[0_0_20px_rgba(16,185,129,0.4)]",
+            "shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+          );
+
+          iconPlay.classList.add("hidden");
+          iconPause.classList.remove("hidden");
+
+          btnReset.disabled = false;
+          btnRecord.disabled = false;
+
+          if (emptyMsg) emptyMsg.style.display = "none";
+        }
+      }
+
+      function recordLap() {
+        if (!isRunning) return;
+
+        lapCount++;
+
+        // Create Record Row
+        const row = document.createElement("div");
+        row.className =
+          "record-item flex justify-between items-center p-3 bg-slate-800/40 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors";
+
+        row.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-slate-700 text-[10px] font-bold text-slate-300">#${lapCount}</span>
+                </div>
+                <div class="mono text-sm font-bold text-white tracking-wider">
+                    ${formatTime(elapsedTime).raw}
+                </div>
+            `;
+
+        // Insert at Top
+        recordsList.prepend(row);
+      }
+
+      function resetTimer() {
+        // Logic
+        clearInterval(timerInterval);
+        isRunning = false;
+        elapsedTime = 0;
+        startTime = 0;
+        lapCount = 0;
+
+        // Display
+        display.innerHTML = `00:00<span class="text-3xl text-slate-500">.00</span>`;
+
+        // Buttons
+        btnReset.disabled = true;
+        btnRecord.disabled = true;
+
+        // Main Button Reset
+        iconPlay.classList.remove("hidden");
+        iconPause.classList.add("hidden");
+        btnMain.classList.replace("bg-emerald-500", "bg-blue-600");
+
+        // Spinner
+        spinner.classList.remove("opacity-100", "spin-slow");
+        spinner.classList.add("opacity-0");
+
+        // Clear List
+        recordsList.innerHTML = "";
+        recordsList.appendChild(emptyMsg);
+        emptyMsg.style.display = "flex";
+      }
+    </script>
+  </body>
+</html>

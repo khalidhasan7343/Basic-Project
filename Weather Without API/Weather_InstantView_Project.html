@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atmosphere Weather Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+
+    <style>
+      body {
+        font-family: "Outfit", sans-serif;
+        transition: background 1s ease-in-out;
+      }
+
+      /* === DYNAMIC BACKGROUND THEMES === */
+      .bg-clear {
+        background: linear-gradient(135deg, #38bdf8, #2563eb);
+      }
+      .bg-clouds {
+        background: linear-gradient(135deg, #94a3b8, #475569);
+      }
+      .bg-rain {
+        background: linear-gradient(135deg, #6366f1, #312e81);
+      }
+      .bg-snow {
+        background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+      }
+      .bg-thunder {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+      }
+
+      /* === ANIMATIONS === */
+      .card-enter {
+        animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      @keyframes slideUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .weather-content {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.5s ease-out;
+      }
+      .weather-content.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .icon-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+          filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+        }
+        50% {
+          transform: translateY(-15px);
+          filter: drop-shadow(0 25px 25px rgba(0, 0, 0, 0.15));
+        }
+      }
+
+      .search-container:focus-within {
+        background-color: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body
+    id="appBody"
+    class="bg-clear flex items-center justify-center min-h-screen p-4 text-white overflow-hidden"
+  >
+    <div
+      class="relative w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2.5rem] p-8 shadow-2xl card-enter overflow-hidden"
+    >
+      <div
+        class="absolute -top-24 -left-24 w-64 h-64 bg-white/20 rounded-full blur-[80px] pointer-events-none mix-blend-overlay"
+      ></div>
+
+      <div
+        class="search-container flex items-center bg-white/15 rounded-2xl px-5 py-4 mb-6 border border-white/10 transition-all duration-300"
+      >
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Type 'London', 'Tokyo' or 'Snow'..."
+          class="bg-transparent outline-none border-none text-white placeholder-white/60 w-full font-medium text-lg tracking-wide"
+        />
+
+        <button
+          onclick="simulateSearch()"
+          class="flex items-center justify-center bg-white text-blue-600 w-10 h-10 rounded-xl hover:scale-110 active:scale-95 transition-all shadow-lg group"
+        >
+          <ion-icon
+            name="search"
+            class="text-xl group-hover:rotate-12 transition-transform"
+          ></ion-icon>
+        </button>
+      </div>
+
+      <div
+        id="weatherDisplay"
+        class="flex flex-col items-center text-center weather-content show"
+      >
+        <div class="relative w-48 h-48 flex items-center justify-center">
+          <img
+            src="https://openweathermap.org/img/wn/01d@4x.png"
+            id="weatherIcon"
+            class="w-full h-full object-contain icon-float"
+          />
+        </div>
+
+        <h1
+          class="text-8xl font-bold tracking-tighter mb-2 drop-shadow-lg relative"
+        >
+          <span id="temp">24</span
+          ><span class="text-4xl absolute top-2 align-top">°</span>
+        </h1>
+
+        <h2 id="city" class="text-3xl font-semibold tracking-wide mb-1">
+          New York
+        </h2>
+        <p
+          id="description"
+          class="text-blue-100 text-lg capitalize font-medium mb-10 tracking-wide bg-white/10 px-4 py-1 rounded-full border border-white/5 inline-block"
+        >
+          Clear Sky
+        </p>
+
+        <div class="grid grid-cols-2 gap-4 w-full">
+          <div
+            class="bg-black/10 rounded-2xl p-4 flex items-center justify-between border border-white/5 hover:bg-black/20 transition-all group"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="bg-white/10 p-2 rounded-lg text-cyan-300 group-hover:scale-110 transition-transform"
+              >
+                <ion-icon name="water" class="text-xl"></ion-icon>
+              </div>
+              <div class="text-left">
+                <p id="humidity" class="text-lg font-bold">45%</p>
+                <p
+                  class="text-[10px] text-white/60 uppercase tracking-widest font-bold"
+                >
+                  Humidity
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-black/10 rounded-2xl p-4 flex items-center justify-between border border-white/5 hover:bg-black/20 transition-all group"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="bg-white/10 p-2 rounded-lg text-emerald-300 group-hover:scale-110 transition-transform"
+              >
+                <ion-icon name="paper-plane" class="text-xl"></ion-icon>
+              </div>
+              <div class="text-left">
+                <p id="wind" class="text-lg font-bold">12 km/h</p>
+                <p
+                  class="text-[10px] text-white/60 uppercase tracking-widest font-bold"
+                >
+                  Wind
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const searchInput = document.getElementById("searchInput");
+      const weatherDisplay = document.getElementById("weatherDisplay");
+      const appBody = document.getElementById("appBody");
+
+      // MOCK DATA: Simulating a real API response
+      const mockDB = {
+        london: {
+          temp: 14,
+          city: "London",
+          desc: "Drizzle",
+          humid: "82%",
+          wind: "18 km/h",
+          icon: "09d",
+          theme: "bg-drizzle",
+        },
+        tokyo: {
+          temp: 22,
+          city: "Tokyo",
+          desc: "Broken Clouds",
+          humid: "60%",
+          wind: "24 km/h",
+          icon: "04d",
+          theme: "bg-clouds",
+        },
+        "new york": {
+          temp: 24,
+          city: "New York",
+          desc: "Clear Sky",
+          humid: "45%",
+          wind: "12 km/h",
+          icon: "01d",
+          theme: "bg-clear",
+        },
+        dubai: {
+          temp: 38,
+          city: "Dubai",
+          desc: "Sunny",
+          humid: "20%",
+          wind: "10 km/h",
+          icon: "01d",
+          theme: "bg-clear",
+        },
+        snow: {
+          temp: -4,
+          city: "Moscow",
+          desc: "Heavy Snow",
+          humid: "90%",
+          wind: "30 km/h",
+          icon: "13d",
+          theme: "bg-snow",
+        },
+        rain: {
+          temp: 18,
+          city: "Seattle",
+          desc: "Heavy Rain",
+          humid: "85%",
+          wind: "28 km/h",
+          icon: "10d",
+          theme: "bg-rain",
+        },
+        thunder: {
+          temp: 29,
+          city: "Mumbai",
+          desc: "Thunderstorm",
+          humid: "95%",
+          wind: "40 km/h",
+          icon: "11d",
+          theme: "bg-thunder",
+        },
+      };
+
+      function simulateSearch() {
+        const query = searchInput.value.toLowerCase().trim();
+
+        // Default to 'new york' logic if not found, or pick a specific mock entry
+        const data = mockDB[query] || mockDB["new york"];
+
+        // 1. Fade Out
+        weatherDisplay.classList.remove("show");
+
+        // 2. Wait for animation, then update
+        setTimeout(() => {
+          // Update Text
+          document.getElementById("city").innerText = data.city;
+          document.getElementById("temp").innerText = data.temp;
+          document.getElementById("description").innerText = data.desc;
+          document.getElementById("humidity").innerText = data.humid;
+          document.getElementById("wind").innerText = data.wind;
+
+          // Update Icon
+          document.getElementById(
+            "weatherIcon"
+          ).src = `https://openweathermap.org/img/wn/${data.icon}@4x.png`;
+
+          // Update Background Theme
+          appBody.className = `flex items-center justify-center min-h-screen p-4 text-white overflow-hidden transition-all duration-1000 ${data.theme}`;
+
+          // 3. Fade In
+          weatherDisplay.classList.add("show");
+        }, 500);
+      }
+
+      // Enter Key Support
+      searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") simulateSearch();
+      });
+    </script>
+  </body>
+</html>

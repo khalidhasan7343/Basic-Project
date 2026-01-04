@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Number Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Outfit", sans-serif;
+      }
+
+      /* Smooth fade for the copy notification */
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-900 flex items-center justify-center min-h-screen p-4 text-white"
+  >
+    <div
+      class="w-full max-w-sm bg-gray-800 rounded-3xl p-8 shadow-2xl border border-gray-700 relative overflow-hidden"
+    >
+      <div
+        class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500"
+      ></div>
+
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold tracking-wide text-gray-100">
+          Random Generator
+        </h1>
+        <p class="text-gray-400 text-sm mt-1">Define your range & roll</p>
+      </div>
+
+      <div class="flex gap-4 mb-8">
+        <div class="flex-1">
+          <label
+            class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider"
+            >Min</label
+          >
+          <input
+            type="number"
+            id="minInput"
+            value="1"
+            class="w-full bg-gray-700 text-white font-bold text-center p-3 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none transition-colors"
+          />
+        </div>
+        <div class="flex-1">
+          <label
+            class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider"
+            >Max</label
+          >
+          <input
+            type="number"
+            id="maxInput"
+            value="100"
+            class="w-full bg-gray-700 text-white font-bold text-center p-3 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none transition-colors"
+          />
+        </div>
+      </div>
+
+      <div
+        class="relative group cursor-pointer mb-8"
+        onclick="copyToClipboard()"
+      >
+        <div
+          class="absolute inset-0 bg-indigo-500 blur-xl opacity-20 rounded-full group-hover:opacity-40 transition-opacity"
+        ></div>
+        <div
+          class="relative bg-gray-900 rounded-2xl p-6 text-center border border-gray-700 group-hover:border-indigo-500 transition-colors"
+        >
+          <div
+            id="resultDisplay"
+            class="text-6xl font-black text-white tracking-tight tabular-nums"
+          >
+            0
+          </div>
+          <div
+            class="text-xs text-gray-500 mt-2 font-medium group-hover:text-indigo-400 transition-colors"
+          >
+            Click to Copy
+          </div>
+        </div>
+
+        <div
+          id="toast"
+          class="absolute top-2 right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded hidden"
+        >
+          Copied!
+        </div>
+      </div>
+
+      <button
+        onclick="generateNumber()"
+        id="generateBtn"
+        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+        GENERATE
+      </button>
+    </div>
+
+    <script>
+      const resultDisplay = document.getElementById("resultDisplay");
+      const minInput = document.getElementById("minInput");
+      const maxInput = document.getElementById("maxInput");
+      const generateBtn = document.getElementById("generateBtn");
+
+      let isAnimating = false;
+
+      function generateNumber() {
+        // Prevent spamming while animation is running
+        if (isAnimating) return;
+
+        const min = parseInt(minInput.value);
+        const max = parseInt(maxInput.value);
+
+        // Validation
+        if (isNaN(min) || isNaN(max)) {
+          alert("Please enter valid numbers");
+          return;
+        }
+        if (min >= max) {
+          alert("Minimum must be less than Maximum");
+          return;
+        }
+
+        // The actual random number
+        const finalNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
+        // Start Animation
+        animateValue(finalNumber, min, max);
+      }
+
+      function animateValue(finalValue, min, max) {
+        isAnimating = true;
+        generateBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+        let duration = 500; // Animation lasts 0.5 seconds
+        let startTimestamp = null;
+
+        // This function runs on every frame
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+          // While strictly less than 1 (animation not done), show random noise
+          if (progress < 1) {
+            resultDisplay.textContent =
+              Math.floor(Math.random() * (max - min + 1)) + min;
+            window.requestAnimationFrame(step);
+          } else {
+            // Animation complete, show final number
+            resultDisplay.textContent = finalValue;
+            isAnimating = false;
+            generateBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          }
+        };
+
+        window.requestAnimationFrame(step);
+      }
+
+      function copyToClipboard() {
+        const text = resultDisplay.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          showToast();
+        });
+      }
+
+      function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.remove("hidden");
+        toast.classList.add("fade-in");
+
+        setTimeout(() => {
+          toast.classList.add("hidden");
+          toast.classList.remove("fade-in");
+        }, 1500);
+      }
+    </script>
+  </body>
+</html>
